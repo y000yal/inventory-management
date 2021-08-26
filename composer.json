@@ -1,5 +1,5 @@
 {
-   "name": "geniussystems/inventory-management",
+   "name": "yoel-limbu/inventory-management",
    "description": "a package for inventory management",
    "license": "MIT",
    "require-dev": {
