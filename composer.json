@@ -1,5 +1,5 @@
 {
-   "name": "yoel-limbu/inventory-management",
+   "name": "yoel-limbu/dynamic-inventory-management",
    "description": "a package for inventory management",
    "license": "MIT",
    "require-dev": {
