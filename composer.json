@@ -1,5 +1,5 @@
 {
-   "name": "geniussystems-np/inventory-management",
+   "name": "geniussystems/inventory-management",
    "description": "a package for inventory management",
    "license": "MIT",
    "require-dev": {
