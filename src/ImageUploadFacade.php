@@ -130,4 +130,6 @@ class ImageUploadFacade
         $media = $this->media->create($create_media);
         return $media['id'];
     }
+
+
 }

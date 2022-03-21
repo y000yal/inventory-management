@@ -16,6 +16,8 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Exceptions\PermissionDoesNotExist;
 
 class GroupController extends Controller {
     protected $group;
@@ -44,24 +46,20 @@ class GroupController extends Controller {
         }
         try {
             $parameter = $request->all();
-            $parameter["sort_by"] = $request->get("sort_by", "desc");
-            $parameter["sort_field"] = $request->get("sort_field");
             $parameter["limit"] = $this->limit($request);
             $path = $request->url();
-
             $data = $this->group->getAllWithParam($parameter, $path);
+            $data = $this->group->removeLinks($data);
 
-            if (count($data) == 0) {
-
+            if (count($data['data']) == 0) {
                 return $this->message("No record found", 204, $this->context);
             }
-
             return $this->response($data, 200, $this->context);
 
         } catch (QueryException $exception) {
-            return $this->message('Sql error', 400, $this->context);
+            return $this->message($exception->getTraceAsString(), 521, $this->context, 'Something went wrong.');
         } catch (\Exception $ex) {
-            return $this->message($ex->getMessage(), 500, $this->context);
+            return $this->message($ex->getTraceAsString(), 500, $this->context, 'Something went wrong.');
         }
 
 
@@ -77,25 +75,28 @@ class GroupController extends Controller {
 
     public function store(Request $request) {
         $this->context = "Add Group";
-        $token_params = $request->get('params');
+
         try {
             $this->validate($request, [
-                    "name"    => "required|string",
-                    "logo" => "required|image|mimes:jpeg",
+                    "name"    => "required|string|unique:groups,name",
+                    "logo"    => "required|image",
                     'profile' => "sometimes",
                     'details' => "sometimes",
-                    "status"  => "required|in:0,1",
+                    "status"  => "sometimes|in:0,1",
             ]);
         } catch (\Exception $ex) {
-            return $this->message($ex->response->original, 422, $this->context);
+            return response()->json([
+                                            "status"  => "422",
+                                            "message" => $ex->response->original,
+                                    ], 422);
         }
         try {
             $req = $request->all();
             $req['logo'] = ImageUploadFacade::upload($request->file('logo'), "groups");
             $req['slug'] = str_slug($request->get('name'));
-            $reseller = $this->group->create($req);
-        }  catch (\Exception $ex) {
-            return $this->message($ex->getMessage(), 500, $this->context);
+            $this->group->create($req);
+        } catch (\Exception $ex) {
+            return $this->message($ex->getTraceAsString(), 500, $this->context, 'Something went wrong.');
         }
         return response()->json([
                                         "message" => "Group Created Successfully"
@@ -115,11 +116,13 @@ class GroupController extends Controller {
             $data = $this->group->getSpecificById($id);
             return $this->response($data, 200, $this->context);
         } catch (QueryException $exception) {
-            return $this->message('Sql error', 400, $this->context);
+            return $this->message($exception->getTraceAsString(), 521, $this->context, 'Something went wrong.');
+
         } catch (ModelNotFoundException $ex) {
-            return $this->message("No record found", 204, $this->context);
+            return $this->message($ex->getTraceAsString(), 204, $this->context, 'No record found');
+
         } catch (\Exception $ex) {
-            return $this->message($ex->getMessage(), 500, $this->context);
+            return $this->message($ex->getTraceAsString(), 500, $this->context, 'Something went wrong.');
 
         }
 
@@ -132,39 +135,41 @@ class GroupController extends Controller {
      * @return \Illuminate\Http\JsonResponse
      */
 
-    public function update($id, Request $request,MediaInterface $media) {
+    public function update($id, Request $request, MediaInterface $media) {
 
         $this->context = "Group Update";
-        $token_params = $request->get('params');
         try {
             $this->validate($request, [
                     "name"    => "required|string",
                     'profile' => "sometimes",
                     'details' => "sometimes",
-                    "status"  => "required|in:0,1",
+                    "status"  => "sometimes|in:0,1",
             ]);
         } catch (\Exception $ex) {
             return $this->message($ex->response->original, 422, $this->context);
         }
         try {
             $group = $this->group->getSpecificById($id);
-            $req = $request->all();
+            $req = $request->except('logo');
 
             if ($request->hasFile('logo')) {
-
                 $req['logo'] = ImageUploadFacade::upload($request->file('logo'), "groups");
-
                 $media->delete($group->getOriginal('logo'));
-
+            }
+            elseif (filter_var($request->get('logo'), FILTER_VALIDATE_URL)) {
+                $base_url = config('Config.channel_base_url') . "/images/";
+                $url = $request->get('logo');
+                $id = str_after($url, $base_url);
+                $req['logo'] = $id;
             }
 
             $group = $this->group->update($group->id, $req);
             return $this->message("Group updated successfully", 200, $this->context);
-        }catch (ModelNotFoundException $ex) {
-            return $this->message("No record found", 204, $this->context);
+        } catch (ModelNotFoundException $ex) {
+            return $this->message($ex->getTraceAsString(), 204, $this->context, 'No record found');
 
         } catch (\Exception $ex) {
-            return $this->message($ex->getMessage(), 500, $this->context);
+            return $this->message($ex->getTraceAsString(), 500, $this->context, 'Something went wrong.');
 
         }
 
@@ -178,23 +183,23 @@ class GroupController extends Controller {
     public function delete($id) {
         $this->context = "Group Delete";
         try {
-            $this->group->delete($id);
-            return $this->message("Reseller deleted successfully", 200, $this->context);
-        } catch (QueryException $exception) {
-            return $this->message('Sql error', 400, $this->context);
+            $group = $this->group->getSpecificById($id);
+            if ($group->slug === 'default-group')
+                return response()->json(['message' => 'Sorry default group cannot be deleted.'], 400);
+            if (count($group->inventories) > 0)
+                return response()->json(['message' => 'This group still contains inventories. Please delete related inventories first.'], 400);
+            $this->group->delete($group->id);
+            return $this->message("Group deleted successfully", 200, $this->context);
+        }
+        catch (QueryException $exception) {
+            return $this->message($exception->getTraceAsString(), 521, $this->context, 'Something went wrong.');
+
         } catch (ModelNotFoundException $ex) {
-            return $this->message("No record found", 204, $this->context);
-
+            return $this->message($ex->getTraceAsString(), 204, $this->context, 'No record found');
         } catch (\Exception $ex) {
-            return $this->message($ex->getMessage(), 500, $this->context);
-
+            return $this->message($ex->getTraceAsString(), 500, $this->context, 'Something went wrong.');
         }
 
     }
-
-    /**
-     * @return \Illuminate\Http\JsonResponse
-     */
-
 
 }

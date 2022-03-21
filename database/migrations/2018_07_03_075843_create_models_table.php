@@ -14,13 +14,13 @@ class CreateModelsTable extends Migration
     public function up()
     {
         Schema::create('models', function (Blueprint $table) {
-            $table->increments('id');
+            $table->bigIncrements('id');
+            $table->foreignId('vendor_id')->constrained('vendors')->onDelete('cascade');
             $table->string('name', 16);
             $table->string('slug', 26)->unique();
-            $table->unsignedInteger('vendor_id');
+            $table->string('description')->nullable();
             $table->timestamps();
-
-            $table->foreign('vendor_id')->references('id')->on('vendors')->onDelete('cascade');
+            $table->softDeletes();
         });
     }
 

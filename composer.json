@@ -1,5 +1,5 @@
 {
-   "name": "g-sys/dynamic-inventory-management",
+   "name": "geniussystems-np/inventory-management",
    "description": "a package for inventory management",
    "license": "MIT",
    "require-dev": {

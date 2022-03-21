@@ -12,10 +12,12 @@ namespace GeniussystemsNp\InventoryManagement\Models;
 use GeniussystemsNp\InventoryManagement\Database\Factories\VendorFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 
 class Vendor extends Model
 {
+    use SoftDeletes;
 //    use HasFactory;
     /**
      * The name of table to which this model is associated with.
@@ -30,11 +32,10 @@ class Vendor extends Model
      * @var array
      */
     protected $fillable = [
-        'name','slug'
+        'name','slug','description'
     ];
 
 
-    protected $appends = ['active_inventory_count','inventory_count'];
     protected static function newFactory()
     {
         return VendorFactory::new();
@@ -49,16 +50,5 @@ class Vendor extends Model
         return $this->hasMany('GeniussystemsNp\InventoryManagement\Models\Inventory', 'vendor');
 
     }
-
-    public function getInventoryCountAttribute()
-    {
-        return 0;
-    }
-
-    public function getActiveInventoryCountAttribute()
-    {
-        return 0;
-    }
-
 
 }

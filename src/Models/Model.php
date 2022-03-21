@@ -9,9 +9,10 @@
 namespace GeniussystemsNp\InventoryManagement\Models;
 
 use Illuminate\Database\Eloquent\Model as baseModel;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Model extends baseModel {
-
+use SoftDeletes;
     /**
      * The name of table to which this model is associated with.
      *
@@ -25,10 +26,9 @@ class Model extends baseModel {
      * @var array
      */
     protected $fillable = [
-            'name', 'vendor_id', 'slug'
+            'name','description', 'vendor_id', 'slug'
     ];
 
-    protected $appends = ['active_inventory_count', 'inventory_count'];
 
     public function vendor() {
         return $this->belongsTo('GeniussystemsNp\InventoryManagement\Models\Vendor', 'vendor_id', 'id');
@@ -40,13 +40,6 @@ class Model extends baseModel {
     }
 
 
-    public function getInventoryCountAttribute() {
-        return 0;
-    }
-
-    public function getActiveInventoryCountAttribute() {
-        return 0;
-    }
 
 
 }

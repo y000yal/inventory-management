@@ -14,13 +14,11 @@ class CreateMacsTable extends Migration
     public function up()
     {
         Schema::create('macs', function (Blueprint $table) {
-            $table->increments('id');
+            $table->bigIncrements('id');
             $table->string('mac', 17)->unique();
-            $table->unsignedInteger('inventory_id');
+            $table->foreignId('inventory_id')->constrained('inventory')->onDelete('cascade');
             $table->timestamps();
-
-            $table->foreign('inventory_id')->references('id')->on('inventory')->onDelete('cascade');
-
+            $table->softDeletes();
         });
     }
 

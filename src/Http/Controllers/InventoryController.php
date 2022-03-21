@@ -1,27 +1,28 @@
 <?php
 /**
- * Created by PhpStorm.
- * @author Kabina Suwal <kabina.suwal92@gmail.com>
- * Date: 21-Jun-18
- * Time: 02:48 PM
+ * Class InventoryController
+ * Aug 2021
+ * 1:05 PM
+ * @author Yoel Limbu <yoyal.limbu@gmail.com>
  */
 
 namespace GeniussystemsNp\InventoryManagement\Http\Controllers;
 
 
+use GeniussystemsNp\InventoryManagement\Models\Group;
+use GeniussystemsNp\InventoryManagement\Repo\RepoInterface\GroupInterface;
 use GeniussystemsNp\InventoryManagement\Repo\RepoInterface\InventoryInterface;
 use GeniussystemsNp\InventoryManagement\Repo\RepoInterface\ModelInterface;
 use GeniussystemsNp\InventoryManagement\Repo\RepoInterface\VendorInterface;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
-use LocalParse;
-
-use Maatwebsite\Excel\Facades\Excel;
 
 class InventoryController extends Controller {
     protected $inventory;
@@ -43,42 +44,30 @@ class InventoryController extends Controller {
 
         $this->context = 'Display Inventory List';
         try {
-            $token_params = $request->get('params');
-
-            if ($request->get('guard') == "reseller") {
-                $reseller_id = is_null($token_params->reseller_id) ? $token_params->id : $token_params->reseller_id;
-
-            }
-            else {
-                $reseller_id = "";
-
-            }
-
-
             $this->validate($request, [
-                "filter_field" => "sometimes|string",
-                "filter_value" => "required_with:filter_field|string",
-                "q"            => "sometimes",
+                    "filter_field" => "sometimes|string",
+                    "filter_value" => "required_with:filter_field|string",
+                    "q"            => "sometimes",
             ]);
         } catch (\Exception $ex) {
             return $this->message($ex->response->original, 422, $this->context);
         }
-
         try {
             $parameter = $request->all();
-            $parameter["sort_by"] = $request->get("sort_by", "desc");
-            $parameter["sort_field"] = $request->get("sort_field");
             $parameter["limit"] = $this->limit($request);
+            $parameter["with_relationship"] = ['vendor:id,name', 'model:id,name', 'group:id,name'];
             $path = $request->url();
 
-            $data = $this->inventory->getAllWithParamByReseller($reseller_id, $parameter, $path);
-
-            if (count($data) == 0) {
+            $data = $this->inventory->getAllWithParam($parameter, $path);
+            $data = $this->inventory->removeLinks($data);
+            if (count($data['data']) == 0) {
                 return $this->message('No record found', 204, $this->context);
             }
             return $this->response($data, 200, $this->context);
+        } catch (QueryException $ex) {
+            return $this->message($ex->getTraceAsString(), 521, $this->context, 'Something went wrong.');
         } catch (\Exception $ex) {
-            return $this->message($ex->getMessage(), 500, $this->context);
+            return $this->message($ex->getTraceAsString(), 500, $this->context, 'Something went wrong.');
         }
     }
 
@@ -86,21 +75,14 @@ class InventoryController extends Controller {
      * @return \Illuminate\Http\JsonResponse
      */
 
-    public function unusedInventory() {
+    public function unusedInventory($id) {
         $this->context = 'Display Unused Inventory';
-
         try {
-            $request = App::make(Request::class);
-            $token_params = $request->get('params');
-
-            $reseller_id = is_null($token_params->reseller_id) ? $token_params->id : $token_params->reseller_id;
-            $data = $this->inventory->getUnusedInventories($reseller_id);
+            $data = $this->inventory->getUnusedInventories($id);
             return $this->response($data, 200, $this->context);
         } catch (\Exception $ex) {
-            return $this->message($ex->getMessage(), 500, $this->context);
-
+            return $this->message($ex->getTraceAsString(), 500, $this->context, 'Something went wrong.');
         }
-
     }
 
     /**
@@ -112,39 +94,36 @@ class InventoryController extends Controller {
 
     public function store(Request $request) {
 
-
         $this->context = 'Store Inventory';
-
         try {
             $this->validate($request, [
-                "macs"       => "required|array",
-                "macs.*"     => "required|string|max:17|unique:macs,mac|regex:/^([a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2})$/",
-                "serial"     => "required|unique:inventory,serial|max:17|alpha_num",
-                "vendor"     => "required|integer|exists:vendors,id",
-                "model"      => "required|integer|exists:models,id",
-                "owner" => "sinteger|exists:groups,id",
-                "os_version" => "sometimes|max:16",
-                "batch_no"   => "sometimes:integer|max:11"
+                    "macs"       => "required|array",
+                    "macs.*"     => "required|string|max:17|unique:macs,mac|regex:/^([a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2})$/",
+                    "serial"     => "required|unique:inventory,serial|max:17|alpha_num",
+                    "vendor"     => "required|integer|exists:vendors,id",
+                    "model"      => "required|integer|exists:models,id",
+                    "group_id"   => "sometimes|exists:groups,id",
+                    "os_version" => "sometimes|max:16",
+                    "batch_no"   => "sometimes:integer|max:11"
             ]);
-
         } catch (\Exception $ex) {
             return $this->message($ex->response->original, 422, $this->context);
         }
         try {
             $create = $request->except('macs');
-
             $create['serial'] = strtoupper(trim($create['serial']));
+            $defaultGroup = App::make(GroupInterface::class)->getSpecificByIdOrSlug('default-group');
 
+            $create['group_id'] = $defaultGroup->id;
             $inventory = $this->inventory->create($create);
-
             $macs = $request->input('macs');
 
             foreach ($macs as $mac) {
                 $create = [
-                    'mac'          => strtoupper($mac),
-                    'inventory_id' => $inventory['id'],
-                    'created_at'   => Carbon::now(),
-                    'updated_at'   => Carbon::now()
+                        'mac'          => strtoupper($mac),
+                        'inventory_id' => $inventory['id'],
+                        'created_at'   => Carbon::now(),
+                        'updated_at'   => Carbon::now()
                 ];
 
                 $createList[] = $create;
@@ -155,9 +134,10 @@ class InventoryController extends Controller {
 
             return $this->message("Inventory Added Successfully", 200, $this->context);
 
+        } catch (QueryException $ex) {
+            return $this->message($ex->getTraceAsString(), 521, $this->context, 'Something went wrong.');
         } catch (\Exception $ex) {
-            return $this->message($ex->getMessage(), 500, $this->context);
-
+            return $this->message($ex->getTraceAsString(), 500, $this->context, 'Something went wrong.');
         }
 
 
@@ -176,28 +156,15 @@ class InventoryController extends Controller {
 
             $data = $this->inventory->getSpecificBySerial($serial);
 
-            if ($request->get('guard') == "reseller") {
-                if ($token_params->reseller_id) {
-                    $reseller_id = $token_params->reseller_id;
-                }
-                else {
-                    $reseller_id = $token_params->id;
-                }
-
-                if ($data['owner'] != $reseller_id) {
-                    throw  new ModelNotFoundException();
-                }
-            }
 
             return $this->response($data, 200, $this->context);
 
 
         } catch (ModelNotFoundException $ex) {
-            return $this->message('No record found', 204, $this->context);
-
+            return $this->message($ex->getTraceAsString(), 204, $this->context, 'No record found');
 
         } catch (\Exception $ex) {
-            return $this->message($ex->getMessage(), 500, $this->context);
+            return $this->message($ex->getTraceAsString(), 500, $this->context, 'Something went wrong.');
 
         }
 
@@ -213,22 +180,22 @@ class InventoryController extends Controller {
     public function update($serial, Request $request) {
         $this->context = 'Update Inventory';
 
-
         try {
-            $reseller_id = "";
-            $token_params = $request->get('params');
 
             $inventory = $this->inventory->getSpecificBySerial($serial);
+
             try {
                 $this->validate($request, [
-                    "macs"       => "required|array",
-                    "macs.*"     => "required|string|max:17|unique:macs,mac,$inventory->id,inventory_id|regex:/^([a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2})$/",
-                    "serial"     => "required|unique:inventory,serial, $inventory->id,id|max:16",
-                    "vendor"     => "required|integer|exists:vendors,id",
-                    "model"      => "required|integer|exists:models,id",
-                    "status"     => "sometimes|in:active,inactive,faulty",
-                    "os_version" => "sometimes|max:16",
-                    "batch_no"   => "sometimes:integer|max:11"
+                        "macs"       => "required|array",
+                        "macs.*"     => "required|string|max:17|unique:macs,mac,$inventory->id,inventory_id|regex:/^([a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2})$/",
+                        "serial"     => "required|unique:inventory,serial, $inventory->id,id|max:16",
+                        "vendor"     => "required|integer|exists:vendors,id",
+                        "model"      => "required|integer|exists:models,id",
+                        "group_id"   => "sometimes|integer|exists:groups,id",
+                        "status"     => "sometimes|in:1,0",
+                        "is_faulty"  => "sometimes|in:1,0",
+                        "os_version" => "sometimes|max:16",
+                        "batch_no"   => "sometimes:integer|max:11"
                 ]);
 
             } catch (\Exception $ex) {
@@ -236,35 +203,32 @@ class InventoryController extends Controller {
 
             }
 
-            $create = $request->only('vendor', 'model', 'os_version', 'batch_no');
+            $create = $request->except('macs', 'serial');
             $create['serial'] = strtoupper($request->input('serial'));
             if ($request->filled('status')) {
 
                 $create['status'] = $request->input('status');
             }
+
             $inventory = $this->inventory->update($inventory->id, $create);
-            //            $inventory->macs()->delete();
+            $inventory->macs()->forceDelete();
             foreach ($request->input('macs') as $mac) {
                 $create_mac = [
-                    "inventory_id" => $inventory->id,
-                    "mac"          => strtoupper($mac),
-                    "created_at"   => Carbon::now(),
-                    "updated_at"   => Carbon::now(),
-
+                        "inventory_id" => $inventory->id,
+                        "mac"          => strtoupper($mac),
+                        "created_at"   => Carbon::now(),
+                        "updated_at"   => Carbon::now(),
                 ];
                 $create_list[] = $create_mac;
-
             }
-            //            $inventory->macs()->insert($create_list);
+
+            $inventory->macs()->insert($create_list);
             return $this->message("inventory updated Successfully", 200, $this->context);
-
-
         } catch (ModelNotFoundException $ex) {
-            return $this->message('No record found', 204, $this->context);
+            return $this->message($ex->getTraceAsString(), 204, $this->context, 'No record found');
 
         } catch (\Exception $ex) {
-            return $this->message($ex->getMessage(), 500, $this->context);
-
+            return $this->message($ex->getTraceAsString(), 500, $this->context, 'Something went wrong.');
         }
     }
 
@@ -278,127 +242,117 @@ class InventoryController extends Controller {
 
         try {
             $inventory = $this->inventory->getSpecificBySerial($serial);
-            if (is_null($inventory->inventory_user)) {
-                $this->inventory->delete($inventory->id);
-            }
-            else {
-                return $this->message("inventory is still in use. Please make sure inventory is not assigned to any user before deleting.", 500, $this->context);
+            if (!is_null($inventory->subscribers)) {
+                return $this->message("inventory is still in use. Please make sure inventory is not assigned to any user before deleting.", 400, $this->context);
             }
 
+            $this->inventory->delete($inventory->id);
             return $this->message("inventory deleted Successfully.", 200, $this->context);
 
 
         } catch (ModelNotFoundException $ex) {
-            return $this->message('No record found', 204, $this->context);
+            return $this->message($ex->getTraceAsString(), 204, $this->context, 'No record found');
 
         } catch (\Exception $ex) {
-            return $this->message($ex->getMessage(), 500, $this->context);
+            return $this->message($ex->getTraceAsString(), 500, $this->context, 'Something went wrong.');
 
-        }
-
-    }
-
-    public function attachInventoryToReseller(Request $request) {
-        $this->context = 'Attach Inventory to Reseller';
-
-        try {
-            $this->validate($request, [
-                'inventories'   => 'required|array',
-                "owner"         => "required|integer|exists:reseller,id",
-                'inventories.*' => 'required|exists:inventories,id'
-            ]);
-
-        } catch (\Exception $ex) {
-            return $this->message($ex->response->original, 422, $this->context);
-
-        }
-        try {
-            $inventory = $this->inventory->checkInventoryAssignedToReseller($request['inventories'])->pluck('id');
-            if (count($inventory) != 0) throw new \Exception();
-        } catch (\Exception $ex) {
-            Log::error("Inventory Import", [
-                "status"  => "404",
-                "message" => "Some inventory are already assigned to reseller.",
-
-            ]);
-
-            return response()->json([
-                                        "message" => "Some inventory are already assigned to reseller.",
-                                        "data"    => $inventory
-                                    ], 404);
-        }
-        try {
-            $response = $this->inventory->attachInventoryReseller($request->all());
-
-            return $this->message("Inventory successfully attached to reseller.", 200, $this->context);
-
-
-        } catch (ModelNotFoundException $ex) {
-            return response()->json([
-                                        "message" => $ex->getMessage()
-                                    ], 404);
-        } catch (\Exception $ex) {
-            return $this->message($ex->getMessage(), 500, $this->context);
-
-        }
-    }
-
-    public function getInventoriesUnassignedToReseller() {
-        try {
-            $data = $this->inventory->getUnassignedInventoriesToReseller();
-            return $this->response($data, 200, "Unassigned Inventories List");
-        } catch (\Exception $ex) {
-            $this->message($ex->getMessage(), 500, "Unsigned Inventories List");
         }
 
     }
 
     /**
-     * Detach inventory from reseller.
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-
-    public function detachInventoryFromReseller(Request $request) {
-        $this->context = 'Detach Inventory from Reseller';
+    public function attachInventoryToGroup(Request $request) {
+        $this->context = 'Attach Inventory to Group';
 
         try {
             $this->validate($request, [
-                'inventories'   => 'required|array',
-                'inventories.*' => 'required|exists:inventories,id',
-                "owner"         => "required|integer|exists:reseller,id",
+                    "group_id"         => "required|integer|exists:groups,id",
+                    'inventory_serial' => 'required|exists:inventory,serial'
+            ]);
+
+        } catch (\Exception $ex) {
+            return $this->message($ex->response->original, 422, $this->context);
+
+        }
+        try {
+            $inventory = $this->inventory->checkInventoryAssignedToGroup($request['inventory_serial'])->pluck('id');
+
+            if (count($inventory) != 0) throw new \Exception();
+        } catch (\Exception $ex) {
+            return response()->json([
+                                            "message" => "Some inventory are already assigned to group.",
+                                            "data"    => $inventory
+                                    ], 404);
+        }
+        try {
+            $response = $this->inventory->attachInventoryGroup($request->all());
+
+            return $this->message("Inventory successfully attached to reseller.", 200, $this->context);
+
+
+        } catch (ModelNotFoundException $ex) {
+            return $this->message($ex->getTraceAsString(), 204, $this->context, 'No record found');
+
+        } catch (\Exception $ex) {
+            return $this->message($ex->getTraceAsString(), 500, $this->context, 'Something went wrong.');
+
+        }
+    }
+
+    public function getInventoriesUnassignedToReseller() {
+        $this->context = 'Unsigned Inventories List';
+        try {
+            $data = $this->inventory->getUnassignedInventoriesToReseller();
+            $data = $this->inventory->removeLinks($data);
+            return $this->response($data, 200, "Unassigned Inventories List");
+        } catch (\Exception $ex) {
+            return $this->message($ex->getTraceAsString(), 500, $this->context, 'Something went wrong.');
+        }
+
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function detachInventoryFromGroup(Request $request) {
+        $this->context = 'Detach Inventory from Groups';
+
+        try {
+            $this->validate($request, [
+                    'inventory_serial' => 'required|exists:inventory,serial',
+                    "group_id"         => "required|integer|exists:groups,id",
             ]);
 
         } catch (\Exception $ex) {
             return $this->message($ex->response->original, 422, $this->context);
         }
-
         try {
-            /**
-             * Get list of inventories which belongs to Reseller and is unassigned to subscribers.
-             */
-            $inventoryIds = $this->inventory->checkUnassignedInventoriesOfReseller($request['inventories'], $request['owner'])->pluck('id')->toArray();
-            /**
-             *
-             */
-            if (count(array_diff($request['inventories'], $inventoryIds)) == 0) {
+            $request = $request->all();
+
+            $inventory_serial = $this->inventory->checkUnassignedInventoriesOfGroup($request['inventory_serial'], $request['group_id'])->pluck('serial')->toArray();
+
+
+            if (count($inventory_serial) > 0) {
                 $create = [
-                    "inventories" => $inventoryIds,
-                    "owner"       => null
+                        "inventory_serial" => $inventory_serial,
+                        "group_id"         => null
                 ];
-                $this->inventory->attachInventoryReseller($create);
 
-                return $this->message("inventories removed from reseller successfully.", 200, "Detach Reseller from Inventory");
+                $this->inventory->attachInventoryGroup($create);
+
+                return $this->message("inventories removed from group successfully.", 200, "Detach group from Inventory");
 
 
             }
-            else {
-                return $this->message("Some inventories are still assigned to subscribers.", 403, "Detach Reseller from Inventory");
-            }
+            return $this->message("inventory is still assigned to a subscriber.", 400, "Detach group from Inventory");
 
         } catch (\Exception $ex) {
 
-            return $this->message($ex->getMessage(), 500, "Detach Reseller from Inventory");
+            return $this->message($ex->getTraceAsString(), 500, $this->context, 'Something went wrong.');
 
         }
 
@@ -427,9 +381,9 @@ class InventoryController extends Controller {
 
 
             $this->validate($request, [
-                "filter_field" => "sometimes|string",
-                "filter_value" => "required_with:filter_field|string",
-                "q"            => "sometimes",
+                    "filter_field" => "sometimes|string",
+                    "filter_value" => "required_with:filter_field|string",
+                    "q"            => "sometimes",
             ]);
         } catch (\Exception $ex) {
             return $this->message($ex->response->original, 422, $this->context);
@@ -448,25 +402,7 @@ class InventoryController extends Controller {
             }
             return $this->response($data, 200, $this->context);
         } catch (\Exception $ex) {
-            return $this->message($ex->getMessage(), 500, $this->context);
-        }
-    }
-
-    function timeago($date) {
-        $timestamp = strtotime($date);
-
-        $strTime = ["second", "minute", "hour", "day", "month", "year"];
-        $length = ["60", "60", "24", "30", "12", "10"];
-
-        $currentTime = time();
-        if ($currentTime >= $timestamp) {
-            $diff = time() - $timestamp;
-            for ($i = 0; $diff >= $length[$i] && $i < count($length) - 1; $i++) {
-                $diff = $diff / $length[$i];
-            }
-
-            $diff = round($diff);
-            return $diff . " " . $strTime[$i] . "s ago ";
+            return $this->message($ex->getTraceAsString(), 500, $this->context, 'Something went wrong.');
         }
     }
 
@@ -478,7 +414,7 @@ class InventoryController extends Controller {
 
             $data = $this->inventory->getPublicSpecificBySerial($serial);
 
-            if ($request->get('guard') == "reseller") {
+            if ($request->get('guard') === "reseller") {
                 if ($token_params->reseller_id) {
                     $reseller_id = $token_params->reseller_id;
                 }
@@ -494,7 +430,209 @@ class InventoryController extends Controller {
         } catch (ModelNotFoundException $ex) {
             return $this->message('No record found', 204, $this->context);
         } catch (\Exception $ex) {
-            return $this->message($ex->getMessage(), 500, $this->context);
+            return $this->message($ex->getTraceAsString(), 500, $this->context, 'Something went wrong.');
+
+        }
+    }
+
+    public function verify(Request $request) {
+        $this->context = 'verify file';
+
+        try {
+            $this->validate($request, [
+                    'file' => 'required|file|mimes:csv,txt',
+            ]);
+
+        } catch (\Exception $ex) {
+            return $this->message($ex->response->original, 422, $this->context);
+
+        }
+        try {
+            $createList = [];
+
+            //$reseller_id = Input::get('owner', null);
+            $path = $request->file('file')->getRealPath();
+            $file = fopen($path, "r");
+            $key = -1;
+            $total = 0;
+            $check_array = ['vendor', 'serial', 'model', 'group', 'mac1', 'mac2', 'mac3', 'mac4', 'mac5'];
+            $error_list = [];
+            while (!feof($file)) {
+                $total++;
+                $d = fgetcsv($file);
+                if ($d) {
+                    if ($key == -1) {
+                        $c = array_diff($d, $check_array);
+
+                        if (!empty($c)) {
+                            return $this->message("Please upload the Excel Sheet in the format suggested.", 422, $this->context);
+
+                        }
+                    }
+                    else {
+
+                        $create = array_combine($check_array, $d);
+                        $vendorSlug= str_slug($create['vendor']);
+                        $vendor = $this->vendor->getSpecificByColumnValue('slug', $vendorSlug);
+
+                        if (is_null($vendor)) {
+                            $create['reason'] = [
+                                    "vendor" => [
+                                            "Given vendor not found"
+                                    ]
+                            ];
+                            $error_list[] = $create;
+                            continue;
+                        }
+                        $modelSlug = str_slug($create['model']);
+                        $model = $this->model->getSpecificByColumnValue('slug', $modelSlug);
+
+                        if (is_null($model)) {
+                            $create['reason'] = [
+                                    "model" => [
+                                            "Given model not found"
+                                    ]
+                            ];
+                            $error_list[] = $create;
+                            continue;
+                        }
+
+                        if($model->vendor->slug !== $vendor->slug)
+                        {
+                            $create['reason'] = [
+                                "model" => [
+                                    "model is not of the given vendor"
+                                ]
+                            ];
+                            $error_list[] = $create;
+                            continue;
+                        }
+
+                        $groupSlug = str_slug($create['group']);
+                        $group = Group::where('slug', '=', $groupSlug)->firstOrFail();
+                        if (is_null($group)) {
+                            $create['reason'] = [
+                                    "group" => [
+                                            "Given Group not found"
+                                    ]
+                            ];
+                            $error_list[] = $create;
+                            continue;
+                        }
+
+                        $validator = Validator::make($create, [
+                                "mac1"   => "required|string|max:17|unique:macs,mac|regex:/^([a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2})$/",
+                                "mac2"   => "sometimes|string|max:17|unique:macs,mac|regex:/^([a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2})$/",
+                                "mac3"   => "sometimes|string|max:17|unique:macs,mac|regex:/^([a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2})$/",
+                                "mac4"   => "sometimes|string|max:17|unique:macs,mac|regex:/^([a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2})$/",
+                                "mac5"   => "sometimes|string|max:17|unique:macs,mac|regex:/^([a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2})$/",
+                                "serial" => "required|string|unique:inventory,serial"
+                        ]);
+                        if ($validator->fails()) {
+                            $create['reason'] = $validator->errors();
+
+                            $error_list[] = $create;
+
+                            continue;
+                        }
+                        $macs = array_filter([$create['mac1'], $create['mac2'], $create['mac3'], $create['mac4'], $create['mac5']]);
+
+                        $create['vendor'] = $vendor['id'];
+                        $create['model'] = $model['id'];
+                        $create['group'] = $group['id'];
+
+                        $create['macs'] = $macs;
+                        $create['serial'] = strtoupper(trim($create['serial']));
+                        unset($create['mac1'], $create['mac2'], $create['mac3'], $create['mac4'], $create['mac5']);
+                        $createList[] = $create;
+                    }
+                    $key++;
+                }
+
+            }
+
+            fclose($file);
+
+            DB::beginTransaction();
+            $total = $total - 1;
+            DB::commit();
+            return $this->response([
+                                           "error_data" => $error_list,
+                                           "data"       => $createList,
+                                           "total"      => $total,
+                                           "success"    => $key,
+                                   ], 200, $this->context);
+
+        } catch (ModelNotFoundException $ex) {
+            return response()->json([
+                                            "message" => $ex->getMessage()
+                                    ], 404);
+        } catch (\Exception $ex) {
+            return response()->json([
+                                            "message" => $ex->getMessage()
+                                    ], 500);
+            //            return $this->message("Something went wrong. File may have been already uploaded or has mac or  serial which already exists.", 500, $this->context);
+
+        }
+    }
+
+    public function load(Request $request) {
+        try {
+            $this->validate($request, [
+                    'ipcams'          => 'required|array',
+                    'ipcams.*.vendor' => 'required',
+                    'ipcams.*.model'  => 'required',
+                    "ipcams.*.group"  => "sometimes|integer|exists:groups,id",
+                    "ipcams.*.macs"   => "required|array",
+                    "ipcams.*.macs.*" => "required|string|max:17|unique:macs,mac|regex:/^([a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2})$/",
+            ]);
+
+        } catch (\Exception $ex) {
+            return $this->message($ex->response->original, 422, $this->context);
+
+        }
+
+        try {
+            $ipcams = $request['ipcams'];
+            $latest_batch = $this->inventory->getLatestBatchNo();
+            DB::beginTransaction();
+            $allCams = [];
+            foreach ($ipcams as $key => $ipcam) {
+                $group = isset($ipcam['group']) && $ipcam['group'] !== '' ? $ipcam['group'] : '';
+                $allCams[$key]['serial'] = strtoupper(trim($ipcam['serial']));
+                $allCams[$key]['batch_no'] = $latest_batch++;
+                $allCams[$key]['group_id'] = $group;
+                $allCams[$key]['vendor'] = $ipcam['vendor'];
+                $allCams[$key]['model'] = $ipcam['model'];
+                $inventory = $this->inventory->create(array_only($ipcam, ['vendor', 'model', 'group_id', 'serial', 'batch_no']));
+                $createList = [];
+                foreach ($ipcam['macs'] as $mac) {
+                    $create = [
+                            'mac'          => strtoupper($mac),
+                            'inventory_id' => $inventory['id'],
+                            'created_at'   => Carbon::now(),
+                            'updated_at'   => Carbon::now()
+                    ];
+                    $createList[] = $create;
+                }
+                $inventory->macs()->insert($createList);
+            }
+            DB::commit();
+            return $this->message("File imported successfully.", 200, $this->context);
+
+        } catch (ModelNotFoundException $ex) {
+            return $this->message($ex->getTraceAsString(), 204, $this->context, 'No record found');
+
+        } catch (QueryException $ex) {
+
+            return $this->message($ex->getTraceAsString(), 521, $this->context, 'Something Went Wrong');
+
+        } catch (\Exception $ex) {
+            echo '<pre>';
+            print_r($ex);
+            echo '</pre>';
+            die;
+            return $this->message("Something went wrong. File may have been already uploaded or has mac or  serial which already exists.", 500, $this->context);
 
         }
     }

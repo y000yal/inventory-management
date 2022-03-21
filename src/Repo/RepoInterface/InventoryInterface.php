@@ -7,13 +7,13 @@
  */
 
 namespace GeniussystemsNp\InventoryManagement\Repo\RepoInterface;
+
 use \GeniussystemsNp\InventoryManagement\Repo\RepoInterface\BaseInterface;
 
-interface InventoryInterface extends BaseInterface
-{
-    public function getAllWithParamByReseller($reseller_id,array $parameter, $path);
+interface InventoryInterface extends BaseInterface {
+    public function getAllWithParamByReseller($reseller_id, array $parameter, $path);
 
-    public function getSpecificBySerialAndOwner($mac,$reseller_id);
+    public function getSpecificBySerialAndOwner($mac, $reseller_id);
 
     public function getUnusedInventories($reseller_id);
 
@@ -23,13 +23,13 @@ interface InventoryInterface extends BaseInterface
 
     public function getLatestBatchNo();
 
-    public function checkUnassignedInventoriesOfReseller($inventories,$reseller_id);
+    public function checkUnassignedInventoriesOfGroup($inventories, $reseller_id);
 
-    public function changeStatusOfMultipleInventory(array $ids,$status);
+    public function changeStatusOfMultipleInventory(array $ids, $status);
 
     public function getInventoryReportData($reseller_id = null);
 
-
     public function getPublicSpecificBySerial($serial);
-   
+
+    public function checkInventoryAssignedToGroup($request);
 }

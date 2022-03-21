@@ -30,5 +30,5 @@ interface  BaseInterface
 
     public function getAllIn($column,$arrayValue);
 
-
+    public function removeLinks(object $data);
 }

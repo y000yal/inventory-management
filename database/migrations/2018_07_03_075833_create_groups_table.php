@@ -14,13 +14,15 @@ class CreateGroupsTable extends Migration
     public function up()
     {
         Schema::create('groups', function (Blueprint $table) {
-            $table->increments('id');
+            $table->bigIncrements('id');
             $table->string('name');
+            $table->string('slug', 25);
             $table->text('profile');
-            $table->string('logo');
+            $table->foreignId('logo')->constrained('media')->onDelete('cascade');
             $table->text('details')->nullable();
-            $table->enum('status',[0,1])->default(0);
+            $table->boolean('status')->default(0);
            $table->timestamps();
+           $table->softDeletes();
         });
     }
 

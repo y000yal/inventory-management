@@ -9,10 +9,11 @@
 namespace GeniussystemsNp\InventoryManagement\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 
-
-class Group extends Model  {
+class Group extends Model {
+    use SoftDeletes;
 
     /**
      * The name of table to which this model is associated with.
@@ -28,8 +29,24 @@ class Group extends Model  {
      */
 
     protected $fillable = [
-            'name','slug', 'profile', 'logo', 'details','status'
+        'name', 'slug', 'profile', 'logo', 'details', 'status'
     ];
+    protected $hidden   = ['pivot'];
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function inventories() {
+        return $this->hasMany('GeniussystemsNp\InventoryManagement\Models\Inventory', 'group_id');
+
+    }
+
+    public function getLogoAttribute($value) {
+        if (empty($value)) {
+            return $value;
+        }
+        return config('Config.channel_base_url') . "/images/" . $value;
+
+    }
 
 }

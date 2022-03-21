@@ -4,32 +4,25 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateInventoryTable extends Migration
-{
+class CreateInventoryTable extends Migration {
     /**
      * Run the migrations.
      *
      * @return void
      */
-    public function up()
-    {
+    public function up() {
         Schema::create('inventory', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('serial', 16)->unique();
-            $table->unsignedInteger('vendor');
-            $table->unsignedInteger('model');
-            $table->string('os_version', 16);
-            $table->unsignedInteger('group')->nullable();
-            $table->integer('batch_no');
-            $table->enum('status', ["active", "inactive", "faulty"])->default("inactive");
-            $table->enum('web_user', ["0", "1"])->default("0");
-
+            $table->bigIncrements('id');
+            $table->string('serial', 128)->unique();
+            $table->foreignId('vendor')->constrained('vendors')->onDelete('cascade');
+            $table->foreignId('model')->constrained('models')->onDelete('cascade');
+            $table->string('os_version', 16)->nullable();
+            $table->foreignId('group_id')->nullable()->constrained('groups')->onDelete('cascade');
+            $table->integer('batch_no')->nullable();
+            $table->boolean('is_faulty')->default(0);
+            $table->boolean('status')->default(0);
             $table->timestamps();
-
-            $table->foreign('model')->references('id')->on('models')->onDelete('cascade');
-            $table->foreign('vendor')->references('id')->on('vendors')->onDelete('cascade');
-            $table->foreign('group')->references('id')->on('groups')->onDelete('cascade');
-
+            $table->softDeletes();
         });
     }
 
@@ -38,8 +31,7 @@ class CreateInventoryTable extends Migration
      *
      * @return void
      */
-    public function down()
-    {
+    public function down() {
         Schema::dropIfExists('inventory');
     }
 }

@@ -3,8 +3,9 @@
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
 
-class CreateVendorsTable extends Migration
+class CreateMediaTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,15 +14,20 @@ class CreateVendorsTable extends Migration
      */
     public function up()
     {
-        Schema::create('vendors', function (Blueprint $table) {
+        Schema::create('media', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('name', 16)->unique();
-            $table->string('slug', 25);
-            $table->string('description')->nullable();
+            $table->string('type',16);
+            $table->string('mime_type',16);
+            $table->string('extension',4);
+            $table->integer('size');
+            $table->string('path',200);
             $table->timestamps();
             $table->softDeletes();
         });
+
+        DB::statement("ALTER TABLE media ADD data MEDIUMBLOB");
     }
+
 
     /**
      * Reverse the migrations.
@@ -30,6 +36,6 @@ class CreateVendorsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('vendors');
+        Schema::dropIfExists('media');
     }
 }

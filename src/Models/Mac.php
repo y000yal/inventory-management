@@ -9,10 +9,12 @@ namespace GeniussystemsNp\InventoryManagement\Models;
 
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 
 class Mac extends Model
 {
+    use SoftDeletes;
     /**
      * The name of table to which this model is associated with.
      *
