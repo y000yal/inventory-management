@@ -6,7 +6,7 @@
  * Time: 3:47 PM
  */
 
-namespace  GeniussystemsNp\InventoryManagement\Facades;
+namespace  InventoryManagement\Facades;
 
 
 use Illuminate\Support\Facades\Facade;

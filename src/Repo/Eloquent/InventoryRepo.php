@@ -6,12 +6,12 @@
  * @author Yoel Limbu <yoyal.limbu@gmail.com>
  */
 
-namespace GeniussystemsNp\InventoryManagement\Repo\Eloquent;
+namespace InventoryManagement\Repo\Eloquent;
 
 
-use \GeniussystemsNp\InventoryManagement\Models\Inventory;
-use GeniussystemsNp\InventoryManagement\Repo\Eloquent\BaseRepo;
-use \GeniussystemsNp\InventoryManagement\Repo\RepoInterface\InventoryInterface;
+use \InventoryManagement\Models\Inventory;
+use InventoryManagement\Repo\Eloquent\BaseRepo;
+use \InventoryManagement\Repo\RepoInterface\InventoryInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 

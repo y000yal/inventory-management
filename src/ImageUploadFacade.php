@@ -6,11 +6,11 @@
  * Time: 4:32 PM
  */
 
-namespace  GeniussystemsNp\InventoryManagement;
+namespace  InventoryManagement;
 
 
 use Carbon\Carbon;
-use GeniussystemsNp\InventoryManagement\Repo\RepoInterface\MediaInterface;
+use InventoryManagement\Repo\RepoInterface\MediaInterface;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
 

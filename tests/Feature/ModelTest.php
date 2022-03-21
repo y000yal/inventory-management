@@ -3,16 +3,16 @@
  * Class StbModelTest
  *
  * @category
- * @package GeniussystemsNp\InventoryManagement\Tests\Feature
+ * @package InventoryManagement\Tests\Feature
  * @author Yoel Limbu <yoyal.limbu@gmail.com>
  */
 
-namespace GeniussystemsNp\InventoryManagement\Tests\Feature;
+namespace InventoryManagement\Tests\Feature;
 
 
 use Faker\Factory;
 
-class ModelTest extends \GeniussystemsNp\InventoryManagement\Tests\TestCase {
+class ModelTest extends \InventoryManagement\Tests\TestCase {
 
     /**
      * @test

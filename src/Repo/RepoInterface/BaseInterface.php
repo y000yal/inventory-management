@@ -1,6 +1,6 @@
 <?php
 
-namespace GeniussystemsNp\InventoryManagement\Repo\RepoInterface;
+namespace InventoryManagement\Repo\RepoInterface;
 
 interface  BaseInterface
 {

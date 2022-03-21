@@ -6,12 +6,12 @@
  * @author Yoel Limbu <yoyal.limbu@gmail.com>
  */
 
-namespace GeniussystemsNp\InventoryManagement\Http\Controllers;
+namespace InventoryManagement\Http\Controllers;
 
 
-use GeniussystemsNp\InventoryManagement\Facades\ImageUploadFacade;
-use GeniussystemsNp\InventoryManagement\Repo\RepoInterface\GroupInterface;
-use GeniussystemsNp\InventoryManagement\Repo\RepoInterface\MediaInterface;
+use InventoryManagement\Facades\ImageUploadFacade;
+use InventoryManagement\Repo\RepoInterface\GroupInterface;
+use InventoryManagement\Repo\RepoInterface\MediaInterface;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;

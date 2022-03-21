@@ -1,5 +1,5 @@
 {
-   "name": "geniussystems-np/inventory-management",
+   "name": "y000el/inventory-management",
    "description": "a package for inventory management",
    "license": "MIT",
    "require-dev": {
@@ -9,13 +9,13 @@
    },
    "autoload": {
       "psr-4": {
-         "GeniussystemsNp\\InventoryManagement\\": "src/",
-         "GeniussystemsNp\\InventoryManagement\\Database\\Factories\\": "database/factories/"
+         "InventoryManagement\\": "src/",
+         "InventoryManagement\\Database\\Factories\\": "database/factories/"
       }
    },
    "autoload-dev": {
       "psr-4": {
-         "GeniussystemsNp\\InventoryManagement\\Tests\\": "tests"
+         "InventoryManagement\\Tests\\": "tests"
       }
    },
    "scripts": {
@@ -32,10 +32,10 @@
    "extra": {
       "laravel": {
          "providers": [
-            "GeniussystemsNp\\InventoryManagement\\InventoryManagementProvider.php"
+            "InventoryManagement\\InventoryManagementProvider.php"
          ],
          "aliases": {
-            "ImageUpload": "GeniussystemsNp\\InventoryManagement\\Facades\\ImageUploadFacade"
+            "ImageUpload": "InventoryManagement\\Facades\\ImageUploadFacade"
          }
       }
    },

@@ -6,12 +6,12 @@
  * @author Yoel Limbu <yoyal.limbu@gmail.com>
  */
 
-namespace GeniussystemsNp\InventoryManagement\Http\Controllers;
+namespace InventoryManagement\Http\Controllers;
 
 
 
 use App\Repo\RepoInterface\MediaInterface;
-use GeniussystemsNp\InventoryManagement\Repo\RepoInterface\MediaInterface as RepoInterfaceMediaInterface;
+use InventoryManagement\Repo\RepoInterface\MediaInterface as RepoInterfaceMediaInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

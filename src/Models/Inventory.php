@@ -7,9 +7,9 @@
  * Time: 11:47 AM
  */
 
-namespace GeniussystemsNp\InventoryManagement\Models;
+namespace InventoryManagement\Models;
 
-use GeniussystemsNp\InventoryManagement\Database\Factories\InventoryFactory;
+use InventoryManagement\Database\Factories\InventoryFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -41,16 +41,16 @@ class Inventory extends Model {
     }
 
     public function vendor() {
-        return $this->belongsTo('GeniussystemsNp\InventoryManagement\Models\Vendor', 'vendor');
+        return $this->belongsTo('InventoryManagement\Models\Vendor', 'vendor');
     }
 
     public function model() {
-        return $this->belongsTo('GeniussystemsNp\InventoryManagement\Models\Model', 'model');
+        return $this->belongsTo('InventoryManagement\Models\Model', 'model');
 
     }
 
     public function group() {
-        return $this->belongsTo('GeniussystemsNp\InventoryManagement\Models\Group', 'group_id', 'id');
+        return $this->belongsTo('InventoryManagement\Models\Group', 'group_id', 'id');
 
     }
 

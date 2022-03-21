@@ -1,10 +1,10 @@
 <?php
 
-namespace GeniussystemsNp\InventoryManagement\Tests\Feature;
+namespace InventoryManagement\Tests\Feature;
 
 
-use GeniussystemsNp\InventoryManagement\Models\Vendor;
-use GeniussystemsNp\InventoryManagement\Tests\TestCase;
+use InventoryManagement\Models\Vendor;
+use InventoryManagement\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class VendorTest extends TestCase {

@@ -6,22 +6,22 @@ $router = $this->app->router;
 $router->group(['prefix' => 'admin/inventory/v1/vendors', 'middleware' => ['auth', 'client']], function () use ($router) {
     $router->group(['middleware' => ['permission:view vendor']], function () use ($router) {
         $router->get('/', [
-                'uses' => 'GeniussystemsNp\InventoryManagement\Http\Controllers\VendorController@index']);
+                'uses' => 'InventoryManagement\Http\Controllers\VendorController@index']);
 
         $router->get('/{id:[0-9]+}', [
-                'uses' => 'GeniussystemsNp\InventoryManagement\Http\Controllers\VendorController@adminShow']);
+                'uses' => 'InventoryManagement\Http\Controllers\VendorController@adminShow']);
     });
     $router->post('/', [
             'middleware' => 'permission:create vendor',
-            'uses'       => 'GeniussystemsNp\InventoryManagement\Http\Controllers\VendorController@store']);
+            'uses'       => 'InventoryManagement\Http\Controllers\VendorController@store']);
 
     $router->patch('/{id:[0-9]+}', [
             'middleware' => 'permission:update vendor',
-            'uses'       => 'GeniussystemsNp\InventoryManagement\Http\Controllers\VendorController@update', 'as' => 'update.inventory.vendor']);
+            'uses'       => 'InventoryManagement\Http\Controllers\VendorController@update', 'as' => 'update.inventory.vendor']);
 
     $router->delete('/{id:[0-9]+}', [
             'middleware' => 'permission:delete vendor',
-            'uses'       => 'GeniussystemsNp\InventoryManagement\Http\Controllers\VendorController@delete', 'as' => 'remove.inventory.vendors']);
+            'uses'       => 'InventoryManagement\Http\Controllers\VendorController@delete', 'as' => 'remove.inventory.vendors']);
 
 });
 
@@ -29,23 +29,23 @@ $router->group(['prefix' => 'admin/inventory/v1/vendors', 'middleware' => ['auth
 $router->group(['prefix' => 'admin/inventory/v1/models', 'middleware' => ['auth:admin', 'client']], function () use ($router) {
     $router->group(['middleware' => ['permission:view model']], function () use ($router) {
         $router->get('/', [
-                'uses' => 'GeniussystemsNp\InventoryManagement\Http\Controllers\ModelController@index']);
+                'uses' => 'InventoryManagement\Http\Controllers\ModelController@index']);
 
         $router->get('/{id:[0-9]+}', [
-                'uses' => 'GeniussystemsNp\InventoryManagement\Http\Controllers\ModelController@adminShow']);
+                'uses' => 'InventoryManagement\Http\Controllers\ModelController@adminShow']);
     });
     $router->post('/', [
             'middleware' => 'permission:create model',
-            'uses'       => 'GeniussystemsNp\InventoryManagement\Http\Controllers\ModelController@store']);
+            'uses'       => 'InventoryManagement\Http\Controllers\ModelController@store']);
 
     $router->delete('/{id:[0-9]+}', [
             'middleware' => 'permission:delete model',
-            'uses'       => 'GeniussystemsNp\InventoryManagement\Http\Controllers\ModelController@delete']);
+            'uses'       => 'InventoryManagement\Http\Controllers\ModelController@delete']);
 
 
     $router->patch('/{id:[0-9]+}', [
             'middleware' => 'permission:update model',
-            'uses'       => 'GeniussystemsNp\InventoryManagement\Http\Controllers\ModelController@update']);
+            'uses'       => 'InventoryManagement\Http\Controllers\ModelController@update']);
 
 });
 
@@ -53,22 +53,22 @@ $router->group(['prefix' => 'admin/inventory/v1/models', 'middleware' => ['auth:
 $router->group(['prefix' => 'admin/service/v1/groups', 'middleware' => ['auth:admin', 'client']], function () use ($router) {
     $router->group(['middleware' => ['permission:view owner']], function () use ($router) {
         $router->get('{id:[0-9]+}', [
-                'uses' => 'GeniussystemsNp\InventoryManagement\Http\Controllers\GroupController@adminShow', 'as' => 'groups.detail']);
+                'uses' => 'InventoryManagement\Http\Controllers\GroupController@adminShow', 'as' => 'groups.detail']);
         $router->get('/', [
-                'uses' => 'GeniussystemsNp\InventoryManagement\Http\Controllers\GroupController@index', 'as' => 'list.groups']);
+                'uses' => 'InventoryManagement\Http\Controllers\GroupController@index', 'as' => 'list.groups']);
     });
     $router->post('/', [
             'middleware' => 'permission:create owner',
-            'uses'       => 'GeniussystemsNp\InventoryManagement\Http\Controllers\GroupController@store', 'as' => 'add.group']);
+            'uses'       => 'InventoryManagement\Http\Controllers\GroupController@store', 'as' => 'add.group']);
 
 
     $router->patch('{id:[0-9]+}', [
             'middleware' => 'permission:update owner',
-            'uses'       => 'GeniussystemsNp\InventoryManagement\Http\Controllers\GroupController@update', 'as' => 'update.groups']);
+            'uses'       => 'InventoryManagement\Http\Controllers\GroupController@update', 'as' => 'update.groups']);
 
     $router->delete('{id:[0-9]+}', [
             'middleware' => 'permission:delete owner',
-            'uses'       => 'GeniussystemsNp\InventoryManagement\Http\Controllers\GroupController@delete', 'as' => 'remove.groups']);
+            'uses'       => 'InventoryManagement\Http\Controllers\GroupController@delete', 'as' => 'remove.groups']);
 
 });
 
@@ -76,44 +76,44 @@ $router->group(['prefix' => 'admin/service/v1/groups', 'middleware' => ['auth:ad
 $router->group(['prefix' => 'admin/inventory/v1/ipcams', 'middleware' => ['auth:admin', 'client', 'role:admin']], function () use ($router) {
     $router->group(['middleware' => ['permission:view inventory']], function () use ($router) {
         $router->get('/{id:[0-9]+}/unused-inventory', [
-                'uses' => 'GeniussystemsNp\InventoryManagement\Http\Controllers\InventoryController@unusedInventory', 'as' => 'list.allUnusedInventory']);
+                'uses' => 'InventoryManagement\Http\Controllers\InventoryController@unusedInventory', 'as' => 'list.allUnusedInventory']);
 
         $router->get('/', [
-                'uses' => 'GeniussystemsNp\InventoryManagement\Http\Controllers\InventoryController@index', 'as' => 'list.inventory']);
+                'uses' => 'InventoryManagement\Http\Controllers\InventoryController@index', 'as' => 'list.inventory']);
         $router->get('/{serial}', [
-                'uses' => 'GeniussystemsNp\InventoryManagement\Http\Controllers\InventoryController@adminShow', 'as' => 'inventory.detail']);
+                'uses' => 'InventoryManagement\Http\Controllers\InventoryController@adminShow', 'as' => 'inventory.detail']);
 
     });
     $router->post('/', [
             'middleware' => 'permission:create inventory',
-            'uses'       => 'GeniussystemsNp\InventoryManagement\Http\Controllers\InventoryController@store', 'as' => 'add.inventory']);
+            'uses'       => 'InventoryManagement\Http\Controllers\InventoryController@store', 'as' => 'add.inventory']);
 
     $router->post('/verify-file', [
             'middleware' => 'permission:create inventory',
-            'uses'       => 'GeniussystemsNp\InventoryManagement\Http\Controllers\InventoryController@verify']);
+            'uses'       => 'InventoryManagement\Http\Controllers\InventoryController@verify']);
 
     $router->post('/load-ipcam', [
             'middleware' => 'permission:create inventory',
-            'uses'       => 'GeniussystemsNp\InventoryManagement\Http\Controllers\InventoryController@load']);
+            'uses'       => 'InventoryManagement\Http\Controllers\InventoryController@load']);
 
     $router->post('/attach-inv-to-groups', [
             'middleware' => 'permission:attach ipcam',
-            'uses'       => 'GeniussystemsNp\InventoryManagement\Http\Controllers\InventoryController@attachInventoryToGroup']);
+            'uses'       => 'InventoryManagement\Http\Controllers\InventoryController@attachInventoryToGroup']);
 
     $router->patch('/detach-inv-from-groups', [
             'middleware' => 'permission:detach ipcam',
-            'uses'       => 'GeniussystemsNp\InventoryManagement\Http\Controllers\InventoryController@detachInventoryFromGroup']);
+            'uses'       => 'InventoryManagement\Http\Controllers\InventoryController@detachInventoryFromGroup']);
 
     $router->patch('/{serial}', [
             'middleware' => 'permission:update inventory',
-            'uses'       => 'GeniussystemsNp\InventoryManagement\Http\Controllers\InventoryController@update']);
+            'uses'       => 'InventoryManagement\Http\Controllers\InventoryController@update']);
 
     $router->delete('/{serial}', [
             'middleware' => 'permission:delete inventory',
-            'uses'       => 'GeniussystemsNp\InventoryManagement\Http\Controllers\InventoryController@delete']);
+            'uses'       => 'InventoryManagement\Http\Controllers\InventoryController@delete']);
 
 });
 
 $router->get('images/{id:[0-9]+}', [
-        'uses' => 'GeniussystemsNp\InventoryManagement\Http\Controllers\MediaController@getImage', 'as' => 'get.image']);
+        'uses' => 'InventoryManagement\Http\Controllers\MediaController@getImage', 'as' => 'get.image']);
 

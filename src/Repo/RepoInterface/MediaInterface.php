@@ -6,7 +6,7 @@
  * Time: 04:46 PM
  */
 
-namespace GeniussystemsNp\InventoryManagement\Repo\RepoInterface;
+namespace InventoryManagement\Repo\RepoInterface;
 
 
 interface MediaInterface extends BaseInterface

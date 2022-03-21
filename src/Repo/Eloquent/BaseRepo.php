@@ -7,9 +7,9 @@
  */
 
 
-namespace GeniussystemsNp\InventoryManagement\Repo\Eloquent;
+namespace InventoryManagement\Repo\Eloquent;
 
-use \GeniussystemsNp\InventoryManagement\Repo\RepoInterface\BaseInterface;
+use \InventoryManagement\Repo\RepoInterface\BaseInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;

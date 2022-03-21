@@ -6,7 +6,7 @@
  * @author Yoel Limbu <yoyal.limbu@gmail.com>
  */
 
-namespace GeniussystemsNp\InventoryManagement\Models;
+namespace InventoryManagement\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -37,7 +37,7 @@ class Group extends Model {
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function inventories() {
-        return $this->hasMany('GeniussystemsNp\InventoryManagement\Models\Inventory', 'group_id');
+        return $this->hasMany('InventoryManagement\Models\Inventory', 'group_id');
 
     }
 

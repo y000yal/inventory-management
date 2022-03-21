@@ -6,7 +6,7 @@
  * Time: 11:42 AM
  */
 
-namespace GeniussystemsNp\InventoryManagement\Models;
+namespace InventoryManagement\Models;
 
 use Illuminate\Database\Eloquent\Model as baseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -31,11 +31,11 @@ use SoftDeletes;
 
 
     public function vendor() {
-        return $this->belongsTo('GeniussystemsNp\InventoryManagement\Models\Vendor', 'vendor_id', 'id');
+        return $this->belongsTo('InventoryManagement\Models\Vendor', 'vendor_id', 'id');
     }
 
     public function inventories() {
-        return $this->hasMany('GeniussystemsNp\InventoryManagement\Models\Inventory', 'model', 'id');
+        return $this->hasMany('InventoryManagement\Models\Inventory', 'model', 'id');
 
     }
 

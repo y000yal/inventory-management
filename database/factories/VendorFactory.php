@@ -1,9 +1,9 @@
 <?php
 
-namespace GeniussystemsNp\InventoryManagement\Database\Factories;
+namespace InventoryManagement\Database\Factories;
 
 
-use GeniussystemsNp\InventoryManagement\Models\Vendor;
+use InventoryManagement\Models\Vendor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class VendorFactory extends Factory {

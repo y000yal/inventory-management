@@ -6,11 +6,11 @@
  * Time: 04:47 PM
  */
 
-namespace GeniussystemsNp\InventoryManagement\Repo\Eloquent;
+namespace InventoryManagement\Repo\Eloquent;
 
 
-use \GeniussystemsNp\InventoryManagement\Models\Media;
-use \GeniussystemsNp\InventoryManagement\Repo\RepoInterface\MediaInterface;
+use \InventoryManagement\Models\Media;
+use \InventoryManagement\Repo\RepoInterface\MediaInterface;
 
 class MediaRepo extends BaseRepo implements MediaInterface
 {

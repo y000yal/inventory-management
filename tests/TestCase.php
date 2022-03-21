@@ -6,15 +6,15 @@
  * @author Yoel Limbu <yoyal.limbu@gmail.com>
  */
 
-namespace GeniussystemsNp\InventoryManagement\Tests;
+namespace InventoryManagement\Tests;
 
 use Faker\Factory;
-use GeniussystemsNp\InventoryManagement\Models\Inventory;
-use GeniussystemsNp\InventoryManagement\Models\InventoryModel;
-use GeniussystemsNp\InventoryManagement\Models\Vendor;
-use GeniussystemsNp\InventoryManagement\Repo\Eloquent\ModelRepo;
-use GeniussystemsNp\InventoryManagement\Repo\Eloquent\InventoryRepo;
-use GeniussystemsNp\InventoryManagement\Repo\Eloquent\VendorRepo;
+use InventoryManagement\Models\Inventory;
+use InventoryManagement\Models\InventoryModel;
+use InventoryManagement\Models\Vendor;
+use InventoryManagement\Repo\Eloquent\ModelRepo;
+use InventoryManagement\Repo\Eloquent\InventoryRepo;
+use InventoryManagement\Repo\Eloquent\VendorRepo;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Route;

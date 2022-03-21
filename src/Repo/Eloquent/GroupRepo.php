@@ -6,11 +6,11 @@
  * @author Yoel Limbu <yoyal.limbu@gmail.com>
  */
 
-namespace GeniussystemsNp\InventoryManagement\Repo\Eloquent;
+namespace InventoryManagement\Repo\Eloquent;
 
 
-use GeniussystemsNp\InventoryManagement\Models\Group;
-use \GeniussystemsNp\InventoryManagement\Repo\RepoInterface\GroupInterface;
+use InventoryManagement\Models\Group;
+use \InventoryManagement\Repo\RepoInterface\GroupInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 

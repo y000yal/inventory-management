@@ -6,12 +6,12 @@
  * @author Yoel Limbu <yoyal.limbu@gmail.com>
  */
 
-namespace GeniussystemsNp\InventoryManagement\Repo\Eloquent;
+namespace InventoryManagement\Repo\Eloquent;
 
 
-use \GeniussystemsNp\InventoryManagement\Repo\Eloquent\BaseRepo;
-use \GeniussystemsNp\InventoryManagement\Models\Vendor;
-use \GeniussystemsNp\InventoryManagement\Repo\RepoInterface\VendorInterface;
+use \InventoryManagement\Repo\Eloquent\BaseRepo;
+use \InventoryManagement\Models\Vendor;
+use \InventoryManagement\Repo\RepoInterface\VendorInterface;
 use Illuminate\Support\Facades\Schema;
 
 class VendorRepo extends BaseRepo implements VendorInterface

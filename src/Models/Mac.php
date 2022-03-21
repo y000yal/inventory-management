@@ -5,7 +5,7 @@
  * 12:20 PM
  * @author Yoel Limbu <yoyal.limbu@gmail.com>
  */
-namespace GeniussystemsNp\InventoryManagement\Models;
+namespace InventoryManagement\Models;
 
 
 use Illuminate\Database\Eloquent\Model;

@@ -6,9 +6,9 @@
  * Time: 02:51 PM
  */
 
-namespace GeniussystemsNp\InventoryManagement\Repo\RepoInterface;
+namespace InventoryManagement\Repo\RepoInterface;
 
-use \GeniussystemsNp\InventoryManagement\Repo\RepoInterface\BaseInterface;
+use \InventoryManagement\Repo\RepoInterface\BaseInterface;
 
 interface InventoryInterface extends BaseInterface {
     public function getAllWithParamByReseller($reseller_id, array $parameter, $path);

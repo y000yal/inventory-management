@@ -5,20 +5,20 @@
  * @category
  * @author Yoel Limbu <yoyal.limbu@gmail.com>
  */
-namespace GeniussystemsNp\InventoryManagement\Providers;
+namespace InventoryManagement\Providers;
 
 use Faker\Factory;
-use GeniussystemsNp\InventoryManagement\ImageUploadFacade;
-use GeniussystemsNp\InventoryManagement\Repo\Eloquent\GroupRepo;
-use GeniussystemsNp\InventoryManagement\Repo\Eloquent\MediaRepo;
-use GeniussystemsNp\InventoryManagement\Repo\Eloquent\ModelRepo;
-use GeniussystemsNp\InventoryManagement\Repo\Eloquent\InventoryRepo;
-use GeniussystemsNp\InventoryManagement\Repo\Eloquent\VendorRepo;
-use GeniussystemsNp\InventoryManagement\Repo\RepoInterface\GroupInterface;
-use GeniussystemsNp\InventoryManagement\Repo\RepoInterface\InventoryInterface;
-use GeniussystemsNp\InventoryManagement\Repo\RepoInterface\MediaInterface;
-use GeniussystemsNp\InventoryManagement\Repo\RepoInterface\ModelInterface;
-use GeniussystemsNp\InventoryManagement\Repo\RepoInterface\VendorInterface;
+use InventoryManagement\ImageUploadFacade;
+use InventoryManagement\Repo\Eloquent\GroupRepo;
+use InventoryManagement\Repo\Eloquent\MediaRepo;
+use InventoryManagement\Repo\Eloquent\ModelRepo;
+use InventoryManagement\Repo\Eloquent\InventoryRepo;
+use InventoryManagement\Repo\Eloquent\VendorRepo;
+use InventoryManagement\Repo\RepoInterface\GroupInterface;
+use InventoryManagement\Repo\RepoInterface\InventoryInterface;
+use InventoryManagement\Repo\RepoInterface\MediaInterface;
+use InventoryManagement\Repo\RepoInterface\ModelInterface;
+use InventoryManagement\Repo\RepoInterface\VendorInterface;
 use \Illuminate\Support\ServiceProvider;
 class InventoryManagementProvider extends ServiceProvider {
     /**

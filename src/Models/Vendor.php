@@ -5,11 +5,11 @@
  * 2:16 PM
  * @author Yoel Limbu <yoyal.limbu@gmail.com>
  */
-namespace GeniussystemsNp\InventoryManagement\Models;
+namespace InventoryManagement\Models;
 
 
 
-use GeniussystemsNp\InventoryManagement\Database\Factories\VendorFactory;
+use InventoryManagement\Database\Factories\VendorFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -42,12 +42,12 @@ class Vendor extends Model
     }
     public function inventoryModels()
     {
-        return $this->hasMany('GeniussystemsNp\InventoryManagement\Models\Model', 'vendor_id', 'id');
+        return $this->hasMany('InventoryManagement\Models\Model', 'vendor_id', 'id');
     }
 
     public function inventories()
     {
-        return $this->hasMany('GeniussystemsNp\InventoryManagement\Models\Inventory', 'vendor');
+        return $this->hasMany('InventoryManagement\Models\Inventory', 'vendor');
 
     }
 

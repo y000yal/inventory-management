@@ -3,16 +3,16 @@
  * Class StbTest
  *
  * @category
- * @package GeniussystemsNp\InventoryManagement\Tests\Feature
+ * @package InventoryManagement\Tests\Feature
  * @author Yoel Limbu <yoyal.limbu@gmail.com>
  */
 
-namespace GeniussystemsNp\InventoryManagement\Tests\Feature;
+namespace InventoryManagement\Tests\Feature;
 
 
-use GeniussystemsNp\InventoryManagement\Models\Inventory;
+use InventoryManagement\Models\Inventory;
 
-class StbTest extends \GeniussystemsNp\InventoryManagement\Tests\TestCase {
+class StbTest extends \InventoryManagement\Tests\TestCase {
     //    public function test_creating_new_stb() {
     //        $create = [
     //                "serial"  => 456842654,

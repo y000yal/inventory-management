@@ -1,10 +1,10 @@
 <?php
 
 
-namespace GeniussystemsNp\InventoryManagement\Http\Controllers;
+namespace InventoryManagement\Http\Controllers;
 
 
-use GeniussystemsNp\InventoryManagement\Repo\RepoInterface\VendorInterface;
+use InventoryManagement\Repo\RepoInterface\VendorInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
